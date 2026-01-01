@@ -2,20 +2,21 @@ name: CR1NE NEWS Daily Sync
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 每天北京时间 08:00
-  workflow_dispatch: # 支持手动点击运行
+    - cron: '0 0 * * *' 
+  workflow_dispatch: 
 
 jobs:
   run-sync:
     runs-on: ubuntu-latest
+    # 必须有这个权限声明，脚本才能修改你的仓库文件
     permissions:
       contents: write
-      pages: write
-      id-token: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -30,14 +31,10 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python update_news.py
 
-      - name: Commit changes
+      - name: Commit and Push changes
         run: |
-          git config --global user.name "CR1NE-Bot"
-          git config --global user.email "liuzihehehehe123@gmail.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "CR1NE's NEWS Auto Update $(date)" || echo "No changes to commit"
-          git push
-
-      # 关键步骤：手动触发 GitHub Pages 重新构建
-      - name: Trigger GitHub Pages Deploy
-        uses: actions/deploy-pages@v2
+          git commit -m "Auto Update News Content" || echo "No changes to commit"
+          git push origin main
