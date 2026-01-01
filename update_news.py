@@ -1,43 +1,38 @@
 import os
 import re
-import datetime
 import google.generativeai as genai
 
-# 配置 Gemini
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# 检查是否为周六
-is_saturday = datetime.datetime.now().weekday() == 5
-sections = "今日热点、每周国内、每周国际" if is_saturday else "今日热点"
-
-prompt = f"""
-你现在是 CR1NE's NEWS 的主编。请生成{sections}板块的内容。
-要求：
-1. 每日热点放在 <div id="daily">，国内放在 <div id="domestic">，国际放在 <div id="intl">。
-2. 每一条新闻格式必须严格如下：
-   <div class="bg-white rounded-3xl p-6 mb-6 shadow-sm border border-slate-100">
-     <h3 class="font-bold text-xl mb-3 text-slate-800 tracking-tight">【中文标题 / English Title】</h3>
-     <p class="text-slate-600 mb-4 leading-relaxed">中文摘要内容</p>
-     <p class="text-slate-400 italic text-sm border-l-4 border-indigo-100 pl-4 leading-loose" onmouseup="quickTranslate(event)">English news summary content here.</p>
-   </div>
-3. 仅返回 HTML 标签代码，不要包含 ```html 等 Markdown 标记。
+prompt = """
+作为 CR1NE's NEWS 主编，生成今日热点。
+格式要求：
+<div id="daily" class="news-section active">
+    <div class="bg-white rounded-3xl p-6 mb-6 shadow-sm border border-slate-100">
+        <h3 class="font-bold text-xl mb-3 text-slate-800">【标题 / Title】</h3>
+        <p class="text-slate-600 mb-4">中文摘要</p>
+        <p class="text-slate-400 italic text-sm border-l-4 border-indigo-100 pl-4" onmouseup="quickTranslate(event)">English description here.</p>
+    </div>
+</div>
+<div id="domestic" class="news-section"></div>
+<div id="intl" class="news-section"></div>
 """
 
 try:
     response = model.generate_content(prompt)
-    new_content = response.text
+    new_html = response.text.replace("```html", "").replace("```", "").strip()
     
     with open("index.html", "r", encoding="utf-8") as f:
         content = f.read()
-    
-    # 匹配并替换整个 main 区域
-    pattern = r'<main id="content".*?>(.*?)</main>'
-    replacement = f'<main id="content" class="max-w-4xl mx-auto p-4 mt-2 min-h-[70vh]">{new_content}</main>'
+
+    # 这里的 ID 必须匹配 index.html 里的 main id="content"
+    pattern = r'(<main id="content".*?>)(.*?)(</main>)'
+    replacement = rf'\1\n{new_html}\n\3'
     updated_html = re.sub(pattern, replacement, content, flags=re.DOTALL)
-    
+
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(updated_html)
-    print("Success: Content updated in index.html")
+    print("Update successful")
 except Exception as e:
-    print(f"Update failed: {e}")
+    print(f"Error: {e}")
