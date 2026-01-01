@@ -1,40 +1,37 @@
 name: CR1NE NEWS Daily Sync
 
 on:
-  schedule:
-    - cron: '0 0 * * *' 
   workflow_dispatch: 
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   run-sync:
     runs-on: ubuntu-latest
-    # 必须有这个权限声明，脚本才能修改你的仓库文件
     permissions:
       contents: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install
         run: pip install google-generativeai
 
-      - name: Generate News Content
+      - name: Generate
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python update_news.py
 
-      - name: Commit and Push changes
+      - name: Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Auto Update News Content" || echo "No changes to commit"
+          git commit -m "AI Update $(date)" || exit 0
           git push origin main
