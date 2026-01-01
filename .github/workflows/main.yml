@@ -1,0 +1,29 @@
+name: CR1NE NEWS Daily Sync
+on:
+  schedule:
+    - cron: '0 0 * * *' 
+  workflow_dispatch:
+jobs:
+  run-sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: Generate
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python update_news.py
+      - name: Deploy
+        run: |
+          git config --global user.name "CR1NE-Bot"
+          git config --global user.email "liuzihehehehe123@gmail.com"
+          git add index.html
+          git commit -m "CR1NE's NEWS Update $(date)" || exit 0
+          git push
