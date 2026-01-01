@@ -16,7 +16,7 @@
     <header class="bg-indigo-700 text-white p-6 sticky top-0 z-50 shadow-xl">
         <div class="flex justify-between items-center max-w-4xl mx-auto">
             <h1 class="text-2xl font-black tracking-widest uppercase">CR1NE's <span class="text-indigo-200">NEWS</span></h1>
-            <div id="currentDate" class="text-xs font-mono bg-indigo-800 px-3 py-1 rounded-full border border-indigo-400"></div>
+            <div id="currentDate" class="text-xs font-mono bg-indigo-800 px-3 py-1 rounded-full border border-indigo-400">2026/1/1</div>
         </div>
     </header>
 
@@ -28,19 +28,8 @@
     </nav>
 
     <main id="content" class="max-w-4xl mx-auto p-4 mt-2 min-h-[70vh]">
-        <div id="daily" class="news-section active">
-            <div class="flex flex-col items-center justify-center mt-32 text-gray-400">
-                <p class="animate-pulse">正在同步今日全球资讯...</p>
-            </div>
-        </div>
-        <div id="domestic" class="news-section"></div>
-        <div id="intl" class="news-section"></div>
-        <div id="vocab" class="news-section">
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                <h2 class="text-xl font-bold mb-4 flex items-center text-slate-800">📓 我的生词本 <span id="vocabCount" class="ml-2 text-xs bg-indigo-50 px-2 py-1 rounded-full text-indigo-400">0</span></h2>
-                <ul id="vocabList" class="divide-y divide-gray-50"></ul>
-                <button onclick="clearVocab()" class="mt-8 text-xs text-red-300 w-full text-center">清空记录</button>
-            </div>
+        <div class="flex flex-col items-center justify-center mt-32 text-gray-400">
+            <p class="animate-pulse">正在从 AI 枢纽同步今日全球资讯...</p>
         </div>
     </main>
 
@@ -54,14 +43,20 @@
     </div>
 
     <script>
+        // 设置页头日期
         document.getElementById('currentDate').innerText = new Date().toLocaleDateString();
+
+        // 切换板块逻辑
         function switchTab(id) {
             document.querySelectorAll('.news-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            const targetSection = document.getElementById(id);
+            if(targetSection) targetSection.classList.add('active');
             document.getElementById('btn-' + id).classList.add('active');
             if(id === 'vocab') renderVocab();
         }
+
+        // AI 翻译接口调用
         async function quickTranslate(e) {
             const word = window.getSelection().toString().trim().toLowerCase();
             if (word && word.length > 1) {
@@ -70,23 +65,40 @@
                 try {
                     const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
                     const data = await res.json();
-                    document.getElementById('transMeaning').innerText = data[0]?.meanings[0]?.definitions[0]?.definition || "未找到释义";
-                } catch { document.getElementById('transMeaning').innerText = "查询失败"; }
+                    document.getElementById('transMeaning').innerText = data[0]?.meanings[0]?.definitions[0]?.definition || "抱歉，未找到该单词的详细释义。";
+                } catch {
+                    document.getElementById('transMeaning').innerText = "网络连接异常，查询失败。";
+                }
             }
         }
-        function hideModal() { document.getElementById('transModal').style.transform = 'translateY(100%)'; }
+
+        function hideModal() {
+            document.getElementById('transModal').style.transform = 'translateY(100%)';
+        }
+
+        // 生词本逻辑 (保存在手机本地)
         function saveWord() {
             const word = document.getElementById('targetWord').innerText;
             let vocab = JSON.parse(localStorage.getItem('myVocab') || '[]');
-            if(!vocab.includes(word)) { vocab.push(word); localStorage.setItem('myVocab', JSON.stringify(vocab)); }
+            if(!vocab.includes(word)) {
+                vocab.push(word);
+                localStorage.setItem('myVocab', JSON.stringify(vocab));
+            }
             hideModal();
         }
+
         function renderVocab() {
             const vocab = JSON.parse(localStorage.getItem('myVocab') || '[]');
-            document.getElementById('vocabCount').innerText = vocab.length;
-            document.getElementById('vocabList').innerHTML = vocab.map(w => `<li class="py-4 flex justify-between font-bold text-slate-700">${w}</li>`).join('');
+            const container = document.getElementById('vocab');
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold mb-4 flex items-center text-slate-800">📓 我的生词本 <span class="ml-2 text-xs bg-indigo-50 px-2 py-1 rounded-full text-indigo-400">${vocab.length}</span></h2>
+                    <ul class="divide-y divide-gray-50">
+                        ${vocab.map(w => `<li class="py-4 flex justify-between font-bold text-slate-700">${w}</li>`).join('')}
+                    </ul>
+                    <button onclick="localStorage.removeItem('myVocab'); renderVocab();" class="mt-8 text-xs text-red-300 w-full text-center">清空生词记录</button>
+                </div>`;
         }
-        function clearVocab() { localStorage.removeItem('myVocab'); renderVocab(); }
     </script>
 </body>
 </html>
