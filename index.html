@@ -10,63 +10,51 @@
         .news-section.active { display: block; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .tab-btn.active { color: #6366f1; border-bottom: 3px solid #6366f1; }
-        body { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-slate-50 pb-24">
     <header class="bg-indigo-700 text-white p-6 sticky top-0 z-50 shadow-xl">
         <div class="flex justify-between items-center max-w-4xl mx-auto">
-            <div>
-                <h1 class="text-2xl font-black tracking-widest uppercase">CR1NE's <span class="text-indigo-200">NEWS</span></h1>
-                <p class="text-[10px] text-indigo-100 opacity-80 uppercase tracking-widest mt-1">Global Insight · Daily Update</p>
-            </div>
+            <h1 class="text-2xl font-black tracking-widest uppercase">CR1NE's <span class="text-indigo-200">NEWS</span></h1>
             <div id="currentDate" class="text-xs font-mono bg-indigo-800 px-3 py-1 rounded-full border border-indigo-400"></div>
         </div>
     </header>
 
-    <nav class="bg-white border-b flex justify-around p-1 text-sm font-bold text-gray-400 sticky top-[88px] z-40 shadow-sm">
-        <button onclick="switchTab('daily')" id="btn-daily" class="tab-btn flex-1 py-3 active">今日热点</button>
-        <button onclick="switchTab('domestic')" id="btn-domestic" class="tab-btn flex-1 py-3">每周国内</button>
-        <button onclick="switchTab('intl')" id="btn-intl" class="tab-btn flex-1 py-3">每周国际</button>
-        <button onclick="switchTab('vocab')" id="btn-vocab" class="tab-btn flex-1 py-3 text-orange-400">生词本</button>
+    <nav class="bg-white border-b flex justify-around p-1 sticky top-[88px] z-40 shadow-sm">
+        <button onclick="switchTab('daily')" id="btn-daily" class="tab-btn flex-1 py-3 active font-bold text-gray-400">今日热点</button>
+        <button onclick="switchTab('domestic')" id="btn-domestic" class="tab-btn flex-1 py-3 font-bold text-gray-400">每周国内</button>
+        <button onclick="switchTab('intl')" id="btn-intl" class="tab-btn flex-1 py-3 font-bold text-gray-400">每周国际</button>
+        <button onclick="switchTab('vocab')" id="btn-vocab" class="tab-btn flex-1 py-3 font-bold text-orange-400">生词本</button>
     </nav>
 
     <main id="content" class="max-w-4xl mx-auto p-4 mt-2 min-h-[70vh]">
         <div id="daily" class="news-section active">
             <div class="flex flex-col items-center justify-center mt-32 text-gray-400">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>
-                <p>CR1NE's NEWS 正在为您编译全球资讯...</p>
+                <p class="animate-pulse">正在同步今日全球资讯...</p>
             </div>
         </div>
         <div id="domestic" class="news-section"></div>
         <div id="intl" class="news-section"></div>
         <div id="vocab" class="news-section">
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                <h2 class="text-xl font-bold mb-4 flex items-center text-slate-800">📓 我的私藏生词 
-                    <span id="vocabCount" class="ml-2 text-xs bg-indigo-50 px-2 py-1 rounded-full text-indigo-400">0</span>
-                </h2>
+                <h2 class="text-xl font-bold mb-4 flex items-center text-slate-800">📓 我的生词本 <span id="vocabCount" class="ml-2 text-xs bg-indigo-50 px-2 py-1 rounded-full text-indigo-400">0</span></h2>
                 <ul id="vocabList" class="divide-y divide-gray-50"></ul>
-                <button onclick="clearVocab()" class="mt-8 text-xs text-red-300 hover:text-red-500 w-full text-center">清空所有单词记录</button>
+                <button onclick="clearVocab()" class="mt-8 text-xs text-red-300 w-full text-center">清空记录</button>
             </div>
         </div>
     </main>
 
     <div id="transModal" class="fixed bottom-0 inset-x-0 bg-white shadow-[0_-15px_50px_rgba(0,0,0,0.2)] rounded-t-[2.5rem] p-8 transform translate-y-full transition-transform duration-300 z-[60] border-t border-indigo-50">
         <div class="flex justify-between items-start mb-4">
-            <div>
-                <h3 id="targetWord" class="text-3xl font-black text-slate-800 tracking-tighter"></h3>
-                <div id="phoneticText" class="text-indigo-400 font-mono text-sm mt-1"></div>
-            </div>
-            <button onclick="saveWord()" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-all">+ 存入生词本</button>
+            <h3 id="targetWord" class="text-3xl font-black text-slate-800 tracking-tighter"></h3>
+            <button onclick="saveWord()" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg">+ 存入生词本</button>
         </div>
-        <div id="transMeaning" class="text-slate-600 my-6 text-base leading-relaxed bg-slate-50 p-4 rounded-2xl italic"></div>
-        <div id="googleLink" class="mb-6 flex justify-end"></div>
-        <button onclick="hideModal()" class="w-full py-4 bg-slate-100 rounded-2xl font-bold text-slate-400 hover:bg-slate-200 transition-colors">返回阅读</button>
+        <div id="transMeaning" class="text-slate-600 my-6 text-base leading-relaxed bg-slate-50 p-4 rounded-2xl italic">正在查询...</div>
+        <button onclick="hideModal()" class="w-full py-4 bg-slate-100 rounded-2xl font-bold text-slate-400">返回阅读</button>
     </div>
 
     <script>
-        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('zh-CN', {month:'short', day:'numeric', weekday:'short'});
-
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString();
         function switchTab(id) {
             document.querySelectorAll('.news-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -74,55 +62,31 @@
             document.getElementById('btn-' + id).classList.add('active');
             if(id === 'vocab') renderVocab();
         }
-
         async function quickTranslate(e) {
-            const selection = window.getSelection().toString().trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-            if (selection && selection.length > 1 && selection.length < 50) {
-                const modal = document.getElementById('transModal');
-                document.getElementById('targetWord').innerText = selection;
-                document.getElementById('transMeaning').innerText = "🔍 正在从云端词库检索释义...";
-                document.getElementById('phoneticText').innerText = "";
-                modal.style.transform = 'translateY(0)';
-                
-                document.getElementById('googleLink').innerHTML = `<a href="https://translate.google.com/?sl=en&tl=zh-CN&text=${encodeURIComponent(selection)}&op=translate" target="_blank" class="text-xs text-indigo-400 underline decoration-dotted">详情参考 Google 翻译 ↗</a>`;
-
+            const word = window.getSelection().toString().trim().toLowerCase();
+            if (word && word.length > 1) {
+                document.getElementById('targetWord').innerText = word;
+                document.getElementById('transModal').style.transform = 'translateY(0)';
                 try {
-                    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${selection}`);
+                    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
                     const data = await res.json();
-                    if (data[0]) {
-                        document.getElementById('phoneticText').innerText = data[0].phonetic || "";
-                        document.getElementById('transMeaning').innerText = data[0].meanings[0].definitions[0].definition;
-                    } else {
-                        document.getElementById('transMeaning').innerText = "抱歉，未找到该词的直接解释。建议点击下方链接查看翻译。";
-                    }
-                } catch {
-                    document.getElementById('transMeaning').innerText = "网络请求失败。";
-                }
+                    document.getElementById('transMeaning').innerText = data[0]?.meanings[0]?.definitions[0]?.definition || "未找到释义";
+                } catch { document.getElementById('transMeaning').innerText = "查询失败"; }
             }
         }
-
         function hideModal() { document.getElementById('transModal').style.transform = 'translateY(100%)'; }
-
         function saveWord() {
             const word = document.getElementById('targetWord').innerText;
-            if(!word) return;
             let vocab = JSON.parse(localStorage.getItem('myVocab') || '[]');
-            if(!vocab.includes(word)) {
-                vocab.push(word);
-                localStorage.setItem('myVocab', JSON.stringify(vocab));
-            }
+            if(!vocab.includes(word)) { vocab.push(word); localStorage.setItem('myVocab', JSON.stringify(vocab)); }
             hideModal();
         }
-
         function renderVocab() {
-            const list = document.getElementById('vocabList');
             const vocab = JSON.parse(localStorage.getItem('myVocab') || '[]');
             document.getElementById('vocabCount').innerText = vocab.length;
-            list.innerHTML = vocab.length === 0 ? '<li class="py-10 text-center text-gray-400 italic">生词本空空如也</li>' : 
-                vocab.reverse().map(w => `<li class="py-4 flex justify-between items-center"><strong class="text-slate-700">${w}</strong><a href="https://translate.google.com/?sl=en&tl=zh-CN&text=${w}&op=translate" target="_blank" class="text-indigo-400 text-xs bg-indigo-50 px-3 py-1 rounded-lg">详细查阅</a></li>`).join('');
+            document.getElementById('vocabList').innerHTML = vocab.map(w => `<li class="py-4 flex justify-between font-bold text-slate-700">${w}</li>`).join('');
         }
-
-        function clearVocab() { if(confirm('确定要清空所有生词吗？')){localStorage.removeItem('myVocab'); renderVocab();}}
+        function clearVocab() { localStorage.removeItem('myVocab'); renderVocab(); }
     </script>
 </body>
 </html>
